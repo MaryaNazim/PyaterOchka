@@ -131,17 +131,20 @@ namespace DateTime
             dataGridView1.DataSource = bSource;
             dataGridView1.Invoke(new Action(() =>
             {
-                System.DateTime editDt = System.DateTime.Now.AddDays(1);
-                foreach (DataGridViewRow row in dataGridView1.Rows)
+                lock (locker)
                 {
-                    System.DateTime date = Convert.ToDateTime(row.Cells[3].Value);
-                    if (date < System.DateTime.Now.AddDays(-1))
+                    System.DateTime editDt = System.DateTime.Now.AddDays(1);
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        row.DefaultCellStyle.BackColor = Color.Red;
-                    }
-                    else if (date > System.DateTime.Now.AddDays(-1) && date < editDt)
-                    {
-                        row.DefaultCellStyle.BackColor = Color.Yellow;
+                        System.DateTime date = Convert.ToDateTime(row.Cells[3].Value);
+                        if (date < System.DateTime.Now.AddDays(-1))
+                        {
+                            row.DefaultCellStyle.BackColor = Color.Red;
+                        }
+                        else if (date > System.DateTime.Now.AddDays(-1) && date < editDt)
+                        {
+                            row.DefaultCellStyle.BackColor = Color.Yellow;
+                        }
                     }
                 }
             }));
@@ -191,9 +194,26 @@ namespace DateTime
             }
         }
 
+        object locker = new object();
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            bSource.Filter = "[title] LIKE'" + textBox3.Text + "%'";
+            lock (locker)
+            {
+                System.DateTime editdate = System.DateTime.Now.AddDays(1);
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    Regex regex = new Regex($@"\w*{textBox3.Text}\w*", RegexOptions.Compiled | RegexOptions.Singleline);
+                    if (regex.IsMatch(row.Cells[1].Value.ToString()))
+                    {
+                        row.Visible = true;
+                    }
+                    else
+                    {
+                        row.Visible = false;
+                    }
+                }
+            }
         }
     }
 }
+
