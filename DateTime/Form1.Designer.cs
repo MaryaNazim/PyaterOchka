@@ -98,6 +98,7 @@ namespace DateTime
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(200, 20);
             this.dateTimePicker1.TabIndex = 7;
+            this.dateTimePicker1.Value = new System.DateTime(2023, 2, 11, 17, 14, 27, 0);
             // 
             // Form1
             // 

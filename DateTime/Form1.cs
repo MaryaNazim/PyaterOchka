@@ -38,7 +38,7 @@ namespace DateTime
         private void Form1_Load(object sender, EventArgs e)
         {
             // строка подключения к БД
-            string connStr = "server=10.90.12.110;port=33333;user=st_4_20_6;database=is_4_20_st6_KURS;password=22702128;";
+            string connStr = "server=chuc.caseum.ru;port=33333;user=st_4_20_6;database=is_4_20_st6_KURS;password=22702128;";
             // создаём объект для подключения к БД
             conn = new MySqlConnection(connStr);
             //Вызываем метод для заполнение дата Грида
@@ -99,7 +99,6 @@ namespace DateTime
             table.Clear();
             //Вызываем метод получения записей, который вновь заполнит таблицу
             GetListProducts();
-
         }
 
         //Метод получения ID выделенной строки, для последующего вызова его в нужных методах
@@ -129,24 +128,24 @@ namespace DateTime
             bSource.DataSource = table;
             //Указываем, что источником данных ДатаГрида является bindingsource 
             dataGridView1.DataSource = bSource;
+
             dataGridView1.Invoke(new Action(() =>
             {
-                lock (locker)
+                System.DateTime editDt = System.DateTime.Now.AddDays(1);
+                foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
-                    System.DateTime editDt = System.DateTime.Now.AddDays(1);
-                    foreach (DataGridViewRow row in dataGridView1.Rows)
+                    System.DateTime date = Convert.ToDateTime(row.Cells[3].Value);
+                    if (date < System.DateTime.Now.AddDays(-1))
                     {
-                        System.DateTime date = Convert.ToDateTime(row.Cells[3].Value);
-                        if (date < System.DateTime.Now.AddDays(-1))
-                        {
-                            row.DefaultCellStyle.BackColor = Color.Red;
-                        }
-                        else if (date > System.DateTime.Now.AddDays(-1) && date < editDt)
-                        {
-                            row.DefaultCellStyle.BackColor = Color.Yellow;
-                        }
+                        row.DefaultCellStyle.BackColor = Color.Red;
                     }
+                    else if (date > System.DateTime.Now.AddDays(-1) && date <= editDt)
+                    {
+                        row.DefaultCellStyle.BackColor = Color.Yellow;
+                    }
+
                 }
+
             }));
             conn.Close();
         }
@@ -154,7 +153,7 @@ namespace DateTime
         
         private void button1_Click(object sender, EventArgs e)
         {
-            string tmp = $"INSERT INTO pyaterochka (title, price, date_expiration) VALUES ('{textBox1.Text}', '{textBox2.Text}', '{dateTimePicker1.Value.ToString("yyyy-MM-dd")}')";
+            string tmp = $"INSERT INTO pyaterochka (title, price, date_expiration) VALUES ('{textBox1.Text}', '{Convert.ToDouble(textBox2.Text)}', '{dateTimePicker1.Value.ToString("yyyy-MM-dd")}')";
             MySqlCommand cmd = new MySqlCommand(tmp, conn);
             try
             {
@@ -194,12 +193,11 @@ namespace DateTime
             }
         }
 
-        object locker = new object();
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            lock (locker)
+           dataGridView1.Invoke(new Action(() =>
             {
-                System.DateTime editdate = System.DateTime.Now.AddDays(1);
+                dataGridView1.CurrentCell = null;
                 foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
                     Regex regex = new Regex($@"\w*{textBox3.Text}\w*", RegexOptions.Compiled | RegexOptions.Singleline);
@@ -210,10 +208,14 @@ namespace DateTime
                     else
                     {
                         row.Visible = false;
+
                     }
+
                 }
-            }
+
+            }));
+
         }
+
     }
 }
-
